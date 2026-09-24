@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+coverage/
+*.log
+.env
+.env.local
+!.env.example
+!.env.local.example
+storage/caregiver-documents/**
+!storage/caregiver-documents/.gitkeep
+.DS_Store

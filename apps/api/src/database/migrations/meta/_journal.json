@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1789716490079,
+      "tag": "0000_far_rictor",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1789915814801,
+      "tag": "0001_solid_quicksilver",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1790088185781,
+      "tag": "0002_purple_spitfire",
+      "breakpoints": true
+    }
+  ]
+}
