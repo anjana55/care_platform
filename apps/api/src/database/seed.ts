@@ -24,6 +24,8 @@ async function main() {
     ['Wound Care / Dressing', 'Medical'],
     ['Dementia Care', 'Specialized Care'],
     ['Physiotherapy Assistance', 'Specialized Care'],
+    ['Medication Assistance', 'Daily Living'],
+    ['Bathing Assistance', 'Daily Living'],
   ] as const;
   const skillIds: Record<string, string> = {};
   for (const [name, category] of skillNames) {
@@ -141,6 +143,7 @@ async function main() {
   if (!existingSelfRegCaregiver) {
     await db.insert(schema.caregivers).values({
       id: uuid(),
+      publicId: uuid(),
       userId: selfRegUserId,
       registrationNumber: `CG-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`,
       fullName: 'Dilani Rathnayake',
@@ -170,6 +173,8 @@ async function main() {
       skills: ['Insulin Administration', 'Vital Signs Monitoring', 'Wound Care / Dressing'],
       languages: ['Sinhala', 'English'],
       location: 'Colombo-Colombo',
+      nightDuty: false,
+      hasVerifiedQualification: true,
     },
     {
       fullName: 'Kumaran Selvarajah',
@@ -178,10 +183,28 @@ async function main() {
       gender: 'MALE' as const,
       civilStatus: 'SINGLE' as const,
       phone: '0771234502',
-      status: 'VERIFIED' as const,
+      status: 'ACTIVE' as const,
       skills: ["Parkinson's Care", 'Physiotherapy Assistance'],
       languages: ['Tamil', 'English'],
       location: 'Jaffna-Jaffna',
+      nightDuty: false,
+      hasVerifiedQualification: false,
+    },
+    {
+      fullName: 'Samanthi Gunawardena',
+      nic: '198712345098',
+      dateOfBirth: '1987-06-11',
+      gender: 'FEMALE' as const,
+      civilStatus: 'MARRIED' as const,
+      phone: '0771234506',
+      status: 'ACTIVE' as const,
+      // Deliberately matches the AI-search example scenario in the brief:
+      // female, Colombo, Parkinson's care, night duty, medication + bathing.
+      skills: ["Parkinson's Care", 'Medication Assistance', 'Bathing Assistance'],
+      languages: ['Sinhala', 'English'],
+      location: 'Colombo-Colombo',
+      nightDuty: true,
+      hasVerifiedQualification: true,
     },
     {
       fullName: 'Chamari Wijesinghe',
@@ -194,6 +217,8 @@ async function main() {
       skills: ['Dementia Care', 'Adult Diaper Changing', 'Patient Meal Preparation'],
       languages: ['Sinhala'],
       location: 'Kandy-Kandy',
+      nightDuty: false,
+      hasVerifiedQualification: false,
     },
     {
       fullName: 'Ruwan Fernando',
@@ -206,6 +231,8 @@ async function main() {
       skills: ['Blood Pressure Monitoring', 'Tube Feeding'],
       languages: ['Sinhala', 'English'],
       location: 'Gampaha-Negombo',
+      nightDuty: false,
+      hasVerifiedQualification: false,
     },
     {
       fullName: 'Priya Thevaraja',
@@ -218,6 +245,8 @@ async function main() {
       skills: ['Catheter Care', 'Blood Sugar Monitoring'],
       languages: ['Tamil', 'Sinhala'],
       location: 'Colombo-Dehiwala',
+      nightDuty: false,
+      hasVerifiedQualification: false,
     },
   ];
 
@@ -235,6 +264,7 @@ async function main() {
 
     await db.insert(schema.caregivers).values({
       id,
+      publicId: uuid(),
       registrationNumber,
       fullName: c.fullName,
       permanentAddress: `No. 12, Temple Road, ${c.location.split('-')[1]}, Sri Lanka`,
@@ -249,6 +279,33 @@ async function main() {
       emergencyContactNumber: '0771111111',
       emergencyContactRelationship: 'Sibling',
       status: c.status,
+    });
+
+    // One qualification per seeded caregiver, verified for those flagged
+    // hasVerifiedQualification - drives the public "Verified Qualification"
+    // badge and its ranking boost.
+    await db.insert(schema.qualifications).values({
+      id: uuid(),
+      caregiverId: id,
+      name: 'National Vocational Qualification in Caregiving',
+      type: 'NVQ',
+      institution: 'National Apprenticeship & Industrial Training Authority',
+      issueDate: '2020-01-15' as unknown as Date,
+      verificationStatus: c.hasVerifiedQualification ? 'VERIFIED' : 'PENDING',
+    });
+
+    // One relevant-experience row so patientCategory/careType can drive
+    // public search's "relevant experience" summary.
+    await db.insert(schema.experiences).values({
+      id: uuid(),
+      caregiverId: id,
+      employerOrClient: 'Private client',
+      role: 'Live-in Caregiver',
+      country: 'Sri Lanka',
+      startDate: '2021-01-01' as unknown as Date,
+      careType: c.skills.includes("Parkinson's Care") ? "Parkinson's Care" : 'General Elderly Care',
+      patientCategory: 'Elderly',
+      verificationStatus: c.hasVerifiedQualification ? 'VERIFIED' : 'PENDING',
     });
 
     for (const skillName of c.skills) {
@@ -276,10 +333,10 @@ async function main() {
     await db.insert(schema.availability).values({
       id: uuid(),
       caregiverId: id,
-      dayDuty: true,
-      nightDuty: false,
+      dayDuty: !c.nightDuty,
+      nightDuty: c.nightDuty,
       liveIn24h: c.status === 'ACTIVE',
-      preferredShift: 'DAY',
+      preferredShift: c.nightDuty ? 'NIGHT' : 'DAY',
       expectedDailyRate: '3500.00',
       expectedMonthlyRate: '85000.00',
       expectedLeaveDays: 4,

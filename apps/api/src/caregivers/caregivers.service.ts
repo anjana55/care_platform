@@ -33,10 +33,14 @@ export class CaregiversService {
   async create(dto: CreateCaregiverDto) {
     await assertUniqueContactFields(this.db, dto);
     const id = uuid();
+    // Generated at creation time, independent of `id`, so the public-search
+    // API never has to expose (or derive from) the internal primary key.
+    const publicId = uuid();
     const registrationNumber = await generateRegistrationNumber(this.db);
 
     await this.db.insert(caregivers).values({
       id,
+      publicId,
       registrationNumber,
       fullName: dto.fullName,
       permanentAddress: dto.permanentAddress,

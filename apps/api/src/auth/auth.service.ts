@@ -86,6 +86,7 @@ export class AuthService {
       const registrationNumber = await generateRegistrationNumber(txDb);
       await tx.insert(caregivers).values({
         id: caregiverId,
+        publicId: uuid(),
         userId,
         registrationNumber,
         fullName: caregiverFields.fullName,

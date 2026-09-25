@@ -46,6 +46,12 @@ export const caregivers = mysqlTable(
   'caregivers',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
+    // Stable identifier shown to anonymous public-search visitors instead of
+    // the internal `id`. Generated once at creation, independent of the PK
+    // so it can be rotated later without touching any internal FK. Never
+    // derived (e.g. HMAC of `id`) on purpose - a stored column can be
+    // reissued if it ever leaks in a way that matters; a derived one can't.
+    publicId: varchar('public_id', { length: 36 }).notNull().unique(),
     // Null for caregivers a staff member created on someone's behalf who
     // haven't (yet) linked a self-service account. Set at self-registration
     // time and never reassigned - one caregiver record, one owning login.
@@ -82,5 +88,8 @@ export const caregivers = mysqlTable(
   (table) => ({
     statusIdx: index('caregivers_status_idx').on(table.status),
     nameIdx: index('caregivers_name_idx').on(table.fullName),
+    publicIdIdx: index('caregivers_public_id_idx').on(table.publicId),
+    // Public search's most common shape: ACTIVE caregivers filtered by location.
+    publicSearchIdx: index('caregivers_public_search_idx').on(table.status, table.district, table.city),
   }),
 );

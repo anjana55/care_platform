@@ -27,6 +27,7 @@ import { ReferencesModule } from './references/references.module';
 import { DocumentsModule } from './documents/documents.module';
 import { HealthInformationModule } from './health-information/health-information.module';
 import { VerificationModule } from './verification/verification.module';
+import { PublicSearchModule } from './public-search/public-search.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { VerificationModule } from './verification/verification.module';
     DocumentsModule,
     HealthInformationModule,
     VerificationModule,
+    PublicSearchModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

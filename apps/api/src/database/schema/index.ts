@@ -1,4 +1,5 @@
 export * from './users.schema';
+export * from './patients.schema';
 export * from './caregivers.schema';
 export * from './qualifications.schema';
 export * from './skills.schema';

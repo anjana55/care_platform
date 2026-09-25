@@ -1,7 +1,7 @@
 import { mysqlTable, varchar, boolean, datetime, mysqlEnum, index } from 'drizzle-orm/mysql-core';
 import { sql } from 'drizzle-orm';
 
-export const userRoleEnum = ['ADMIN', 'STAFF', 'VERIFIER', 'CAREGIVER'] as const;
+export const userRoleEnum = ['ADMIN', 'STAFF', 'VERIFIER', 'CAREGIVER', 'PATIENT_GUARDIAN'] as const;
 export type UserRole = (typeof userRoleEnum)[number];
 
 export const users = mysqlTable(
